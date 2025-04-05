@@ -145,7 +145,7 @@ async def approve_pending_requests(app: Client, m: Message):
     try:
         chat = await app.get_chat(chat_id)
         member = await app.get_chat_member(chat_id, m.from_user.id)
-
+        print(member.status)
         if member.status not in ("creator", "administrator"):
             return await m.reply_text("Only the **group/channel owner** can run this command.")
 
