@@ -134,42 +134,38 @@ async def fcast(_, m : Message):
 
     await lel.edit(f"✅Successful Broadcast to {success} users.\n❌ Failed to {failed} users.\n👾 Found {blocked} Blocked users \n👻 Found {deactivated} Deactivated users.")
     
-from pyrogram.enums import ChatMemberStatus
 
-from pyrogram.enums import ChatMemberStatus
 
 @app.on_message(filters.command("massapprove") & filters.private)
 async def approve_pending_requests(app: Client, m: Message):
     if len(m.command) < 2:
-        return await m.reply_text("Please provide a chat ID. Example:\n`/massapprove -100xxxxxxxxxx`")
+        return await m.reply_text("❌ Please provide a group/channel ID. Example:\n`/massapprove -100xxxxxxxxxx`", quote=True)
 
     try:
         chat_id = int(m.command[1])
+        chat = await app.get_chat(chat_id)
 
-        # Check if the user is admin or creator
-        user = await app.get_chat_member(chat_id, m.from_user.id)
-        if user.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR]:
-            return await m.reply_text("Only an **admin/owner** can run this command.")
+        # # Check if the user is the group/channel owner
+        # member = await app.get_chat_member(chat_id, m.from_user.id)
+        # if member.status != ChatMemberStatus.OWNER:
+        #     return await m.reply_text("❌ Only the **group/channel creator** can run this command.")
 
-        # Check bot admin status
-        bot = await app.get_chat_member(chat_id, app.me.id)
-        if bot.status == ChatMemberStatus.CREATOR:
-            can_invite = True
-        elif bot.status == ChatMemberStatus.ADMINISTRATOR:
-            can_invite = bot.privileges.can_invite_users
-        else:
-            can_invite = False
+        # # Check if the bot is admin
+        # bot_member = await app.get_chat_member(chat_id, app.me.id)
+        # if bot_member.status != ChatMemberStatus.ADMINISTRATOR:
+        #     return await m.reply_text("❌ I'm not an admin in that chat.")
+        # if not bot_member.privileges.can_invite_users:
+        #     return await m.reply_text("❌ I need **'Invite via Link'** permission to approve requests.")
 
-        if not can_invite:
-            return await m.reply_text("❌ I'm not admin or I lack 'Invite via Link' permission.")
+        # Fetch pending join requests
+        pending = []
+        async for req in app.get_chat_join_requests(chat_id):
+            pending.append(req)
 
-        # Fetch pending requests
-        pending = [req async for req in app.get_chat_join_requests(chat_id)]
         if len(pending) < 6:
-            return await m.reply_text(f"❌ Only {len(pending)} requests. Need at least 6 to proceed.")
+            return await m.reply_text(f"❌ Only {len(pending)} pending requests. Minimum 6 required.")
 
-        # Approve requests
-        approved = 0
+        approved_count = 0
         for req in pending:
             try:
                 await app.approve_chat_join_request(chat_id, req.from_user.id)
@@ -177,20 +173,19 @@ async def approve_pending_requests(app: Client, m: Message):
                 await app.send_animation(
                     chat_id=req.from_user.id,
                     animation=gif,
-                    caption=f"Hey {req.from_user.first_name}, your request to join **{(await app.get_chat(chat_id)).title}** has been approved!",
+                    caption=f"Hey {req.from_user.first_name},\nYour request to join **{chat.title}** has been approved!"
                 )
                 add_user(req.from_user.id)
-                approved += 1
+                approved_count += 1
                 await asyncio.sleep(1)
             except Exception as e:
-                print(f"Error: {e}")
+                print(f"Error approving user: {e}")
 
-        await m.reply_text(f"✅ Approved {approved} users!")
+        await m.reply_text(f"✅ Approved {approved_count} users in **{chat.title}**!")
 
     except Exception as e:
-        print(f"Main Error: {e}")
-        await m.reply_text("❌ Something went wrong. Check:\n- Chat ID is correct\n- I'm admin\n- You're admin/owner in that chat.")
-
+        print(f"Error: {e}")
+        await m.reply_text("❌ Failed. Please check:\n- Chat ID is correct\n- You're the **owner**\n- Bot is admin with invite rights.")
 
 
 #run
