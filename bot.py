@@ -143,7 +143,8 @@ async def approve_pending_requests(app: Client, m: Message):
     chat_id = m.command[1]
     
     try:
-        chat = await app.get_chat(chat_id)
+        chat_id = int(chat_id)
+        chat = await app.get_chat(int(chat_id))
         member = await app.get_chat_member(chat_id, m.from_user.id)
         print(member.status)
         if member.status not in ("creator", "administrator"):
