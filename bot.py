@@ -136,6 +136,8 @@ async def fcast(_, m : Message):
     
 from pyrogram.enums import ChatMemberStatus
 
+from pyrogram.enums import ChatMemberStatus
+
 @app.on_message(filters.command("massapprove") & filters.private)
 async def approve_pending_requests(app: Client, m: Message):
     if len(m.command) < 2:
@@ -143,19 +145,30 @@ async def approve_pending_requests(app: Client, m: Message):
 
     try:
         chat_id = int(m.command[1])
+
+        # Check if the user is admin or creator
         user = await app.get_chat_member(chat_id, m.from_user.id)
+        if user.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.CREATOR]:
+            return await m.reply_text("Only an **admin/owner** can run this command.")
 
-        if user.status not in [ChatMemberStatus.CREATOR, ChatMemberStatus.ADMINISTRATOR]:
-            return await m.reply_text("Only an **admin/owner** of the group/channel can run this.")
-
+        # Check bot admin status
         bot = await app.get_chat_member(chat_id, app.me.id)
-        if bot.status != ChatMemberStatus.ADMINISTRATOR or not bot.privileges.can_invite_users:
-            return await m.reply_text("❌ I'm not admin or don't have 'Invite via Link' permission.")
+        if bot.status == ChatMemberStatus.CREATOR:
+            can_invite = True
+        elif bot.status == ChatMemberStatus.ADMINISTRATOR:
+            can_invite = bot.privileges.can_invite_users
+        else:
+            can_invite = False
 
+        if not can_invite:
+            return await m.reply_text("❌ I'm not admin or I lack 'Invite via Link' permission.")
+
+        # Fetch pending requests
         pending = [req async for req in app.get_chat_join_requests(chat_id)]
         if len(pending) < 6:
             return await m.reply_text(f"❌ Only {len(pending)} requests. Need at least 6 to proceed.")
 
+        # Approve requests
         approved = 0
         for req in pending:
             try:
@@ -176,7 +189,8 @@ async def approve_pending_requests(app: Client, m: Message):
 
     except Exception as e:
         print(f"Main Error: {e}")
-        await m.reply_text("❌ Something went wrong. Make sure:\n- Chat ID is correct\n- I'm admin\n- You're admin in that chat.")
+        await m.reply_text("❌ Something went wrong. Check:\n- Chat ID is correct\n- I'm admin\n- You're admin/owner in that chat.")
+
 
 
 #run
