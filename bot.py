@@ -56,52 +56,6 @@ async def approval(app: Client, m: ChatJoinRequest):
     except Exception as err:
         print(str(err))  
         
-@app.on_message(filters.command("massapprove") & filters.private)
-async def approve_pending_requests(app: Client, m: Message):
-    if len(m.command) < 2:
-        return await m.reply_text("Please provide a channel/group ID. Example:\n`/massapprove -100xxxxxxxxxx`", quote=True)
-
-    chat_id = m.command[1]
-    
-    try:
-        chat = await app.get_chat(chat_id)
-        member = await app.get_chat_member(chat_id, m.from_user.id)
-
-        if member.status != "creator":
-            return await m.reply_text("Only the **group/channel owner** can run this command.")
-
-        bot_member = await app.get_chat_member(chat_id, app.me.id)
-        if not bot_member.can_invite_users:
-            return await m.reply_text("❌ I'm not an admin or I lack 'Invite via Link' permission in this chat.")
-
-        pending = []
-        async for req in app.get_chat_join_requests(chat_id):
-            pending.append(req)
-
-        if len(pending) <= 5:
-            return await m.reply_text(f"❌ Only {len(pending)} pending requests. Minimum 6 required.")
-
-        approved_count = 0
-        for req in pending:
-            try:
-                await app.approve_chat_join_request(chat_id, req.from_user.id)
-                gif = random.choice(welcome)
-                await app.send_animation(
-                    chat_id=req.from_user.id,
-                    animation=gif,
-                    caption=f"Hey {req.from_user.first_name},\nYour request to join **{chat.title}** has been accepted!",
-                )
-                add_user(req.from_user.id)
-                approved_count += 1
-                await asyncio.sleep(1)
-            except Exception as e:
-                print(f"Error approving user: {e}")
-
-        await m.reply_text(f"✅ Approved {approved_count} join requests in {chat.title}!")
-
-    except Exception as e:
-        print(e)
-        await m.reply_text("❌ Failed. Make sure:\n- I'm admin in that chat\n- You are the **creator**\n- Chat ID is correct (starts with `-100`)")
 
 
 #pvtstart
@@ -180,7 +134,53 @@ async def fcast(_, m : Message):
 
     await lel.edit(f"✅Successful Broadcast to {success} users.\n❌ Failed to {failed} users.\n👾 Found {blocked} Blocked users \n👻 Found {deactivated} Deactivated users.")
     
+@app.on_message(filters.command("massapprove") & filters.private)
+async def approve_pending_requests(app: Client, m: Message):
+    print('h')
+    if len(m.command) < 2:
+        return await m.reply_text("Please provide a channel/group ID. Example:\n`/massapprove -100xxxxxxxxxx`", quote=True)
 
+    chat_id = m.command[1]
+    
+    try:
+        chat = await app.get_chat(chat_id)
+        member = await app.get_chat_member(chat_id, m.from_user.id)
+
+        if member.status != "creator":
+            return await m.reply_text("Only the **group/channel owner** can run this command.")
+
+        bot_member = await app.get_chat_member(chat_id, app.me.id)
+        if not bot_member.can_invite_users:
+            return await m.reply_text("❌ I'm not an admin or I lack 'Invite via Link' permission in this chat.")
+
+        pending = []
+        async for req in app.get_chat_join_requests(chat_id):
+            pending.append(req)
+
+        if len(pending) <= 5:
+            return await m.reply_text(f"❌ Only {len(pending)} pending requests. Minimum 6 required.")
+
+        approved_count = 0
+        for req in pending:
+            try:
+                await app.approve_chat_join_request(chat_id, req.from_user.id)
+                gif = random.choice(welcome)
+                await app.send_animation(
+                    chat_id=req.from_user.id,
+                    animation=gif,
+                    caption=f"Hey {req.from_user.first_name},\nYour request to join **{chat.title}** has been accepted!",
+                )
+                add_user(req.from_user.id)
+                approved_count += 1
+                await asyncio.sleep(1)
+            except Exception as e:
+                print(f"Error approving user: {e}")
+
+        await m.reply_text(f"✅ Approved {approved_count} join requests in {chat.title}!")
+
+    except Exception as e:
+        print(e)
+        await m.reply_text("❌ Failed. Make sure:\n- I'm admin in that chat\n- You are the **creator**\n- Chat ID is correct (starts with `-100`)")
 
 #run
 print(f"Starting {app.name}")
