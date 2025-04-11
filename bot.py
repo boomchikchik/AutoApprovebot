@@ -151,7 +151,10 @@ async def approve_pending_requests(app: Client, m: Message):
 
         async for req in bot.get_chat_join_requests(chat_id):
             try:
-                await bot.approve_chat_join_request(chat_id, req.user.id)
+                try:  
+                    await bot.approve_chat_join_request(chat_id, req.user.id)
+                except Exception as e:
+                    print(f"FAILED TO APPROVE USER \n ERROR: {e}")
                 gif = random.choice(welcome)
                 try:
                     await app.send_animation(
@@ -172,7 +175,7 @@ async def approve_pending_requests(app: Client, m: Message):
         await m.reply_text(f"✅ Approved **{approved_count}** users in **{chat.title}**!")
 
     except Exception as e:
-        print(f"❌ Error: {e}")
+        print(f"❌ Error- 2: {e}")
         await m.reply_text("❌ Failed. Please make sure:\n- Chat ID is correct\n- You're the **channel owner**\n- User session is admin in the channel")
 
     finally:
