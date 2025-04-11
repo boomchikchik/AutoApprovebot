@@ -151,6 +151,8 @@ async def approve_pending_requests(app: Client, m: Message):
 
         async for req in bot.get_chat_join_requests(chat_id):
             try:
+                await bot.approve_chat_join_request(chat_id, req.user.id)
+                gif = random.choice(welcome)
                 try:
                     await app.send_animation(
                         chat_id=req.user.id,
