@@ -142,6 +142,7 @@ async def approve_pending_requests(app: Client, m: Message):
         return await m.reply_text("❌ Please provide a group/channel ID.\nExample: `/massapprove -100xxxxxxxxxx`", quote=True)
 
     chat_id = m.command[1]
+    chat_id=int(chat_id)
 
     try:
         await bot.start()  # Start the user session
