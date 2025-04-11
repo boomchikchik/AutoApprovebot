@@ -153,13 +153,14 @@ async def approve_pending_requests(app: Client, m: Message):
             try:
                 await bot.approve_chat_join_request(chat_id, req.user.id)
                 gif = random.choice(welcome)
-                await bot.send_animation(
+                await app.send_animation(
                     chat_id=req.user.id,
                     animation=gif,
                     caption=f"Hey {req.user.first_name},\nYour request to join **{chat.title}** has been approved!"
                 )
                 approved_count += 1
-                await asyncio.sleep(1)
+                await asyncio.sleep(1.5)
+                print(approved_count)
             except Exception as e:
                 print(f"❌ Error approving user {req.user.id}: {e}")
 
