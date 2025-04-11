@@ -9,7 +9,7 @@ from pyrogram.enums import ChatMemberStatus
 from database import add_user, add_group, all_users, all_groups, users, remove_user
 
 app = Client("Auto Approve Bot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
-bot = Client("acceptor", api_id=API_ID, api_hash=API_HASH, session_string="BQDJqkIAIXQmiPFJu3UUSFWAXyjX30_P2YTj1YY_ryRQkgszOYbqig2nFveFdKtHzv6CDnmej9I6Rt7-VZrStQXqTY-Y1uusEkIowouxj6Nh307dDYDFtO75BRIkX-m-DLq8yhsqmZAXki6hmdAG2qshleFNtUdOGBBZusZV9V7c_sI4gqf_g28WRimKIfvP65Q48UuvPeu6_LCIozb12nwVu-U2kNMbJ8FcNveaPx513_0ldYlyeNzmAgN3ENuCia6-hSjhft4IfvZZun9KPqAV_PkM6YCPPprOKqZGyHW33FF1CH3RVf3CrX2pixVEgitvy3_K7vEKA6MjnynKcro8K6GHfwAAAAGX1VKSAA")
+bot = Client("acceptor", api_id=config.API_ID, api_hash=config.API_HASH, session_string="BQDJqkIAIXQmiPFJu3UUSFWAXyjX30_P2YTj1YY_ryRQkgszOYbqig2nFveFdKtHzv6CDnmej9I6Rt7-VZrStQXqTY-Y1uusEkIowouxj6Nh307dDYDFtO75BRIkX-m-DLq8yhsqmZAXki6hmdAG2qshleFNtUdOGBBZusZV9V7c_sI4gqf_g28WRimKIfvP65Q48UuvPeu6_LCIozb12nwVu-U2kNMbJ8FcNveaPx513_0ldYlyeNzmAgN3ENuCia6-hSjhft4IfvZZun9KPqAV_PkM6YCPPprOKqZGyHW33FF1CH3RVf3CrX2pixVEgitvy3_K7vEKA6MjnynKcro8K6GHfwAAAAGX1VKSAA")
 
 welcome=[
     "https://telegra.ph/file/51d04427815840250d03a.mp4",
