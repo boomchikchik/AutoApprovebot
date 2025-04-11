@@ -9,6 +9,7 @@ from pyrogram.enums import ChatMemberStatus
 from database import add_user, add_group, all_users, all_groups, users, remove_user
 
 app = Client("Auto Approve Bot", api_id=config.API_ID, api_hash=config.API_HASH, bot_token=config.BOT_TOKEN)
+bot = Client("acceptor", api_id=API_ID, api_hash=API_HASH, session_string="BQDJqkIAIXQmiPFJu3UUSFWAXyjX30_P2YTj1YY_ryRQkgszOYbqig2nFveFdKtHzv6CDnmej9I6Rt7-VZrStQXqTY-Y1uusEkIowouxj6Nh307dDYDFtO75BRIkX-m-DLq8yhsqmZAXki6hmdAG2qshleFNtUdOGBBZusZV9V7c_sI4gqf_g28WRimKIfvP65Q48UuvPeu6_LCIozb12nwVu-U2kNMbJ8FcNveaPx513_0ldYlyeNzmAgN3ENuCia6-hSjhft4IfvZZun9KPqAV_PkM6YCPPprOKqZGyHW33FF1CH3RVf3CrX2pixVEgitvy3_K7vEKA6MjnynKcro8K6GHfwAAAAGX1VKSAA")
 
 welcome=[
     "https://telegra.ph/file/51d04427815840250d03a.mp4",
@@ -135,57 +136,42 @@ async def fcast(_, m : Message):
     await lel.edit(f"✅Successful Broadcast to {success} users.\n❌ Failed to {failed} users.\n👾 Found {blocked} Blocked users \n👻 Found {deactivated} Deactivated users.")
     
 
-
 @app.on_message(filters.command("massapprove") & filters.private)
 async def approve_pending_requests(app: Client, m: Message):
     if len(m.command) < 2:
-        return await m.reply_text("❌ Please provide a group/channel ID. Example:\n`/massapprove -100xxxxxxxxxx`", quote=True)
+        return await m.reply_text("❌ Please provide a group/channel ID.\nExample: `/massapprove -100xxxxxxxxxx`", quote=True)
+
+    chat_id = m.command[1]
 
     try:
-        chat_id = int(m.command[1])
-        chat = await app.get_chat(chat_id)
-
-        # # Check if the user is the group/channel owner
-        # member = await app.get_chat_member(chat_id, m.from_user.id)
-        # if member.status != ChatMemberStatus.OWNER:
-        #     return await m.reply_text("❌ Only the **group/channel creator** can run this command.")
-
-        # # Check if the bot is admin
-        # bot_member = await app.get_chat_member(chat_id, app.me.id)
-        # if bot_member.status != ChatMemberStatus.ADMINISTRATOR:
-        #     return await m.reply_text("❌ I'm not an admin in that chat.")
-        # if not bot_member.privileges.can_invite_users:
-        #     return await m.reply_text("❌ I need **'Invite via Link'** permission to approve requests.")
-
-        # Fetch pending join requests
-        pending = []
-        async for req in app.get_chat_join_requests(chat_id):
-            pending.append(req)
-
-        if len(pending) < 6:
-            return await m.reply_text(f"❌ Only {len(pending)} pending requests. Minimum 6 required.")
-
+        await bot.start()  # Start the user session
+        chat = await bot.get_chat(chat_id)
         approved_count = 0
-        for req in pending:
+
+        async for req in bot.get_chat_join_requests(chat_id):
             try:
-                await app.approve_chat_join_request(chat_id, req.from_user.id)
+                await bot.approve_chat_join_request(chat_id, req.from_user.id)
                 gif = random.choice(welcome)
-                await app.send_animation(
+                await bot.send_animation(
                     chat_id=req.from_user.id,
                     animation=gif,
                     caption=f"Hey {req.from_user.first_name},\nYour request to join **{chat.title}** has been approved!"
                 )
-                add_user(req.from_user.id)
+                # Optional: Call your add_user() function here
                 approved_count += 1
-                await asyncio.sleep(1)
+                await asyncio.sleep(1.5)  # Slight delay to avoid floodwait
             except Exception as e:
-                print(f"Error approving user: {e}")
+                print(f"❌ Error approving user {req.from_user.id}: {e}")
 
-        await m.reply_text(f"✅ Approved {approved_count} users in **{chat.title}**!")
+        await m.reply_text(f"✅ Approved **{approved_count}** users in **{chat.title}**!")
 
     except Exception as e:
-        print(f"Error: {e}")
-        await m.reply_text("❌ Failed. Please check:\n- Chat ID is correct\n- You're the **owner**\n- Bot is admin with invite rights.")
+        print(f"❌ Error: {e}")
+        await m.reply_text("❌ Failed. Please make sure:\n- Chat ID is correct\n- You're the **channel owner**\n- User session is admin in the channel")
+
+    finally:
+        await bot.stop()
+
 
 
 #run
