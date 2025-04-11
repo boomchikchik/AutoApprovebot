@@ -162,11 +162,12 @@ async def approve_pending_requests(app: Client, m: Message):
                         animation=gif,
                         caption=f"Hey {req.user.first_name},\nYour request to join **{chat.title}** has been approved!"
                     )
-                except Exception as e:
-                    print(f"❌ Could not send message to {req.user.id}: {e}")
-
+                except:
+                    print("MEDIA NOT SENT")
+                    
+                
                 approved_count += 1
-                await asyncio.sleep(1.5)
+                await asyncio.sleep(3)
                 print(approved_count)
             except Exception as e:
                 print(f"❌ Error approving user {req.user.id}: {e}")
